@@ -3,6 +3,13 @@ import React, { useEffect, useRef, useState } from 'react'
 import image from './assets/picture.png'
 import verifiedIcon from './assets/verified.png'
 import fakeIcon from './assets/fake.png'
+import fakeIconLight from './assets/fake-light.svg'
+import fakeIconDark from './assets/fake-dark.svg'
+import verifiedIconLight from './assets/verified-light.svg'
+import verifiedIconDark from './assets/verified-dark.svg'
+
+
+import './index.css'
 
 function sleep(ms) {
   return new Promise((res) => setTimeout(res, ms))
@@ -35,46 +42,55 @@ const SAMPLE_FACTS = [
 function FinalResultCard({ headline, summary, verdict }) {
   const isVerified = verdict === 'verified'
   return (
-    <div className="w-full">
-      {/* Badge */}
-      <div className="flex justify-center mb-4">
-        <div
-          className={`inline-block px-4 py-1 rounded-full text-sm font-semibold ${
-            isVerified ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'
-          }`}
-        >
-          {isVerified ? 'Real Claim' : 'Fake Claim'}
-        </div>
-      </div>
-
+    <div className="w-full flex flex-col items-center">
+    
       {/* Media card */}
-      <div className="mx-auto w-full max-w-xl rounded-lg bg-white dark:bg-slate-900 shadow-lg p-6 relative">
-        <div className="bg-white dark:bg-slate-900 rounded-md p-6 flex items-center justify-center">
+        
           {/* Decorative inner card with subtle right-bottom drop shadow */}
-          <div className="w-full max-w-md h-48 bg-white dark:bg-slate-800 rounded-md flex items-center justify-center relative"
+          <div className="w-full max-w-md bg-white dark:bg-[#101012] rounded-md flex flex-col items-center justify-center relative p-8"
                style={{ boxShadow: '8px 8px 0 rgba(0,0,0,0.08)' }}
           >
-            {/* centered icon (verified vs fake) */}
-            <img
-              src={isVerified ? verifiedIcon : fakeIcon}
-              alt={isVerified ? 'Verified' : 'Fake'}
-              className="h-full w-full object-contain"
-            />
+              {/* Badge */}
+          <div className="flex justify-center mb-4">
+            <div
+              className={`inline-block px-4 py-1 rounded-md text-sm font-semibold ${
+                isVerified ? 'bg-[#DEFFC4] text-[#5CC10E] dark:bg-[#17270A] text-[#5CC10E]' : 'bg-[#FFC4C4] text-[#FF3737] dark:bg-[#270A0A] text-[#270A0A]'
+              }`}
+            >
+              {isVerified ? 'Real Claim' : 'Fake Claim'}
+            </div>
           </div>
-        </div>
+
+            {/* centered icon (verified vs fake) */}
+           {/* Light mode image */}
+              <img
+                src={isVerified ? verifiedIconLight : fakeIconLight}
+                alt={isVerified ? 'Verified' : 'Fake'}
+                className="w-auto max-h-48 object-contain mb-4 dark:hidden"
+              />
+
+              {/* Dark mode image */}
+              <img
+                src={isVerified ? verifiedIconDark : fakeIconDark}
+                alt={isVerified ? 'Verified' : 'Fake'}
+                className="w-auto max-h-48 object-contain mb-4 hidden dark:block"
+              />
+
+          </div>
+       
 
         {/* Summary row (with small toggle / dot under image, optional) */}
-        <div className="flex items-center justify-center mt-4">
-          <div className="h-2 w-8 rounded-full mr-2"></div>
+        {/* <div className="flex items-center justify-center mt-4">
+          <div className="h-2 w-8 rounded-full"></div>
           <div
             className={`h-2 w-4 rounded-full ${isVerified ? 'bg-emerald-500' : 'bg-rose-500'}`}
           />
-        </div>
+        </div> */}
 
         {/* Text */}
-        <div className="mt-6 flex items-start gap-3">
+        <div className="mt-6 flex items-center gap-1">
           {/* check icon */}
-          <div className="mt-1">
+          <div className="mt-1  hidden md:block">
             {isVerified ? (
               <svg className="h-6 w-6 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" xmlns="http://www.w3.org/2000/svg">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
@@ -91,7 +107,6 @@ function FinalResultCard({ headline, summary, verdict }) {
             <div className="text-sm text-gray-700 dark:text-slate-200">{summary}</div>
           </div>
         </div>
-      </div>
     </div>
   )
 }
@@ -207,10 +222,11 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f9f9f9] text-gray-800 dark:bg-slate-950 dark:text-slate-100">
-      <div className="max-w-screen-4xl mx-auto relative px-4 sm:px-6 lg:px-8 py-12 lg:pr-[520px]">
+    <div className="min-h-screen bg-[#f9f9f9] text-gray-800 dark:bg-[#101012] dark:text-white transition-colors duration-300">
+      <div className="max-w-screen-4xl mx-auto relative px-0 sm:px-0 lg:px-8 lg:pr-[500px] xl:pr-[520px] py-12">
+
         {/* Main Screen */}
-        <main className="w-full flex flex-col min-h-[70vh]">
+        <main className="w-full flex flex-col min-h-[90vh]">
           <div className="flex-1">
             {messages.length === 0 ? (
               // Hero view when no chat yet
@@ -238,39 +254,41 @@ export default function App() {
             ) : (
               <div
                 ref={scrollRef}
-                className="space-y-6 max-h-[65vh] overflow-y-auto pr-4 mx-auto w-full max-w-3xl lg:max-w-5xl"
-              >
+                className="space-y-6 max-h-[80vh] overflow-y-auto pr-4 mx-auto w-[90%] md:w-[80%] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"> 
+          
                 {messages.map((m) => (
                   <div
                     key={m.id}
-                    className={`flex items-start gap-4 ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                    className={`flex items-end gap-4 ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
                   >
                     {/* assistant avatar */}
                     {m.role === 'assistant' && (
-                      <div className="w-8 h-8 rounded-full bg-white dark:bg-slate-800 shadow flex items-center justify-center text-sm font-medium">
+                      <div className="w-8 h-8 rounded-full bg-white dark:bg-slate-800 shadow flex items-center justify-center text-sm font-medium ">
                         A
                       </div>
                     )}
 
-                    <div className={`rounded-xl p-4 shadow-md max-w-[70%] ${
+                    <div className={`rounded-2xl p-4 shadow-md max-w-[70%]  ${
                       m.role === 'user'
-                        ? 'bg-purple-500 text-white rounded-br-none'
-                        : 'bg-white text-gray-700 dark:bg-slate-800 dark:text-slate-100 rounded-bl-none'
+                        ? 'bg-[#6C63FF] text-white rounded-br-none'
+                        : 'bg-white text-gray-700 dark:bg-[#1B1C22] dark:text-slate-100 rounded-bl-none'
                     }`}>
                       {/* if final result -> show the result card */}
                       {m.final ? (
                         <FinalResultCard headline={m.headline} summary={m.text} verdict={m.verdict} />
-                      ) : (
-                        <>
+                      ) :  (
+                        <div className="flex items-center gap-2">
                           <div>{m.text}</div>
-                          {m.loading && <div className="mt-2"><div className="w-6 h-6 border-2 border-purple-500 rounded-full animate-spin border-t-transparent" /></div>}
-                        </>
+                          {m.loading && (
+                            <div className="w-5 h-5 border-2 border-[#6C63FF] rounded-full animate-spin border-t-transparent" />
+                          )}
+                        </div>
                       )}
                     </div>
 
                     {/* user avatar */}
                     {m.role === 'user' && (
-                      <div className="w-8 h-8 rounded-full bg-purple-500 text-white flex items-center justify-center text-sm font-medium">
+                      <div className="w-8 h-8 rounded-full bg-[#6C63FF] text-white flex items-center justify-center text-sm font-medium">
                         U
                       </div>
                     )}
@@ -280,7 +298,7 @@ export default function App() {
                 {/* draft preview while typing */}
                 {hasDraft && (
                   <div key="draft" className="flex items-start gap-4 justify-end">
-                    <div className="rounded-xl p-4 shadow-md max-w-[70%] bg-purple-500/80 text-white rounded-br-none">
+                    <div className="rounded-2xl  p-4 shadow-md max-w-[70%] bg-purple-500/80 text-white rounded-br-none">
                       {query}
                     </div>
                     <div className="w-8 h-8 rounded-full bg-purple-500 text-white flex items-center justify-center text-sm font-medium">
@@ -299,12 +317,12 @@ export default function App() {
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder="Not sure if it's true? Type it here..."
-                  className="w-full pl-5 pr-12 py-4 rounded-xl bg-white dark:bg-slate-900 shadow-lg placeholder-gray-400 dark:placeholder-slate-400 text-gray-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-purple-300 dark:focus:ring-purple-600/60 border border-transparent dark:border-slate-700"
+                  className="w-full pl-5 pr-12 py-4 rounded-xl bg-white dark:bg-[#1B1C22] shadow-lg placeholder-gray-400 dark:placeholder-[#505050] text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-300 dark:focus:ring-purple-600/60 border border-transparent"
                 />
 
                 <button
                   type="submit"
-                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-gradient-to-br from-purple-500 to-violet-600 p-2.5 sm:p-3 rounded-lg shadow-md transition-transform duration-150 hover:scale-105"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-[#6C63FF] p-2.5 sm:p-3 rounded-lg shadow-md transition-transform duration-150 hover:scale-105"
                   aria-label="submit-search"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -317,20 +335,20 @@ export default function App() {
         </main>
 
         {/* Right sidebar (fixed) */}
-        <aside className="hidden lg:flex flex-col fixed top-0 right-0 h-screen w-[500px] border-l border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 overflow-y-auto">
+        <aside className="hidden lg:flex flex-col fixed top-0 right-0 h-screen w-[500px] border-l border-gray-200 dark:border-none bg-white dark:bg-[#1A1A1F] p-6 overflow-y-auto">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-purple-50 rounded-md">
+              <div className="p-2 bg-purple-500 rounded-md">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-purple-600" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12h18M3 6h18M3 18h18" />
                 </svg>
               </div>
-              <h3 className="text-sm font-semibold">Top 5 Lorem Ipsum</h3>
+             
             </div>
             {/* replaced "see all" with info icon */}
             <button
               onClick={() => setShowInfo(true)}
-              className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-slate-800"
+              className="p-2 rounded-full bg-[#F9F9F9] dark:bg-[#101012]"
               aria-label="Open information modal"
               title="About"
             >
@@ -341,11 +359,36 @@ export default function App() {
           </div>
 
           <div className="space-y-4">
+             <div className="flex items-center gap-1 p-3">
+                {/* simple bar-chart icon (left) */}
+                <svg
+                  className="flex-shrink-0"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 36 36"
+                  fill="none"
+                  aria-hidden="true"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  {/* background circle for contrast (optional) */}
+                  <circle cx="18" cy="18" r="17" fill="transparent" />
+                  {/* three bars */}
+                  <rect x="8" y="18" width="4" height="10" rx="1" fill="#6C63FF" />
+                  <rect x="15" y="12" width="4" height="16" rx="1" fill="#6C63FF" opacity="0.9" />
+                  <rect x="22" y="8" width="4" height="20" rx="1" fill="#6C63FF" opacity="0.8" />
+                </svg>
+
+                {/* title */}
+                <div>
+                  <h4 className="text-md font-medium">Top 5 Lorem Ipsum</h4>
+                </div>
+              </div>
+
             {Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-800">
-                <h4 className="text-lg font-medium">Top 5 Lorem Ipsum</h4>
+              <div key={i} className="p-4 rounded-lg hover:bg-gray-50 dark:hover:bg-[#17171C] transition-colors">
+                <h4 className="text-md font-medium">Top 5 Lorem Ipsum</h4>
+                <div className="text-xs text-gray-300 mb-2 ">2 days ago • Author</div>
                 <p className="mt-1 text-sm text-gray-400 line-clamp-3">a search for 'lorem ipsum' will uncover many web sites still in their infancy. Various versions have evolved over the years...</p>
-                <div className="mt-2 text-xs text-gray-300">2 days ago • Author</div>
               </div>
             ))}
           </div>
@@ -355,7 +398,7 @@ export default function App() {
         <div className="fixed right-4 bottom-4 sm:right-6 sm:bottom-6">
           <button
             onClick={() => setIsDark((v) => !v)}
-            className="p-3 sm:p-4 rounded-full bg-white dark:bg-slate-800 shadow-lg flex items-center justify-center"
+            className="p-3 sm:p-4 rounded-full bg-white  dark:bg-[#101012] shadow-lg flex items-center justify-center"
             aria-pressed={isDark}
             aria-label="Toggle dark mode"
             title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
@@ -388,42 +431,51 @@ export default function App() {
               <div
                 role="dialog"
                 aria-modal="true"
-                className="w-full max-w-3xl rounded-2xl bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 shadow-2xl"
+                className="w-full max-w-3xl rounded-2xl bg-white dark:bg-[#101012] border border-gray-200 dark:border-none shadow-2xl"
               >
                 {/* header */}
-                <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-slate-800">
-                  <h2 className="text-sm font-semibold text-gray-700 dark:text-slate-100">About JuanSource</h2>
+               <div className="flex items-center justify-center relative px-6 py-4 border-b border-gray-100 dark:border-[#2B2C2C]">
+                  <h2 className="text-md font-semibold text-gray-700 dark:text-slate-100 text-center">
+                    About JuanSource
+                  </h2>
                   <button
                     onClick={() => setShowInfo(false)}
-                    className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-slate-800"
+                    className="absolute right-6 p-2 rounded-full bg-[#F9F9F9] dark:bg-[#101012]"
                     aria-label="Close modal"
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-500 dark:text-slate-300" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5 text-gray-500 dark:text-slate-300"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                    >
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
                     </svg>
                   </button>
                 </div>
 
+
                 {/* tabs */}
                 <div className="px-6 pt-4">
                   <div className="flex items-center justify-center">
-                    <div className="inline-flex p-1 rounded-full bg-gray-100 dark:bg-slate-800/80">
+                    <div className="inline-flex p-1 rounded-xl bg-gray-100 dark:bg-[#1B1C22] gap-1">
                       <button
                         onClick={() => setAboutTab('about')}
-                        className={`px-4 py-1.5 text-sm rounded-full transition ${
+                        className={`px-4 py-1.5 text-sm rounded-xl transition ${
                           aboutTab === 'about'
-                            ? 'bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 shadow'
-                            : 'text-gray-600 dark:text-slate-300 hover:text-gray-800 dark:hover:text-slate-100'
+                            ? 'bg-white dark:bg-[#101012] text-gray-900 dark:text-slate-100 shadow'
+                            : 'bg-transparent text-gray-600 dark:text-slate-300 hover:text-gray-800 dark:hover:text-slate-100'
                         }`}
                       >
                         About Us
                       </button>
                       <button
                         onClick={() => setAboutTab('how')}
-                        className={`px-4 py-1.5 text-sm rounded-full transition ${
+                        className={`px-4 py-1.5 text-sm rounded-xl transition ${
                           aboutTab === 'how'
-                            ? 'bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 shadow'
-                            : 'text-gray-600 dark:text-slate-300 hover:text-gray-800 dark:hover:text-slate-100'
+                            ? 'bg-white dark:bg-[#101012] text-gray-900 dark:text-slate-100 shadow'
+                            : 'bg-transparent text-gray-600 dark:text-slate-300 hover:text-gray-800 dark:hover:text-slate-100'
                         }`}
                       >
                         How to Use
@@ -452,14 +504,27 @@ export default function App() {
                         </p>
                       </div>
                     ) : (
-                      <div className="space-y-3">
+                     <div className="space-y-3">
+                        <p>
+                          JuanSource helps you quickly verify if a statement is true or misleading by checking reliable online sources.
+                          Just follow these easy steps:
+                        </p>
+
                         <ol className="list-decimal pl-5 space-y-2">
-                          <li>Type a claim in the input box and press Enter.</li>
-                          <li>We gather public evidence and analyze it.</li>
-                          <li>View the final verdict with a Verified or Fake badge.</li>
-                          <li>Use the sidebar to explore trending items.</li>
+                          <li>
+                            <strong>Enter a claim</strong> – Type or paste the statement you want to fact-check.
+                          </li>
+                          <li>
+                            <strong>Run the check</strong> – JuanSource will search reliable sources and gather evidence.
+                          </li>
+                          <li>
+                            <strong>View the result</strong> – See if the claim is true, false, or unverified, along with key references.
+                          </li>
                         </ol>
+
+                        <p>And there you go! You’ve just verified a claim with JuanSource ✨</p>
                       </div>
+
                     )}
                   </div>
                 </div>
