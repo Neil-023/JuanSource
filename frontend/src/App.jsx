@@ -7,6 +7,8 @@ import fakeIconLight from './assets/fake-light.svg'
 import fakeIconDark from './assets/fake-dark.svg'
 import verifiedIconLight from './assets/verified-light.svg'
 import verifiedIconDark from './assets/verified-dark.svg'
+import Logo from './assets/logo.png'
+
 
 
 import './index.css'
@@ -100,7 +102,7 @@ function FinalResultCard({ headline, reasoning, verdict, evidence }) {
 
         {/* Text */}
         <div className="mt-6 flex items-center gap-1">
-          {/* check icon */}
+          {/* check & cross icon */}
           <div className="mt-1  hidden md:block">
             {isVerified ? (
               <svg className="h-6 w-6 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -308,7 +310,7 @@ export default function App() {
                   </div>
                 </div>
 
-                <h1 className="text-2xl sm:text-3xl md:text-4xl font-semibold text-gray-900 dark:text-white max-w-3xl">
+                <h1 className="text-2xl sm:text-3xl md:text-4xl font-semibold text-gray-900 dark:text-white max-w-3xl tracking-tight">
                   Your go-to tool for verifying facts and exposing fake news.
                 </h1>
 
@@ -407,10 +409,17 @@ export default function App() {
           }`}
         >
           <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-             
-             
+           <div className="flex items-center gap-2">
+              <img
+                src={Logo}
+                alt="JuanSource logo"
+                className="w-6 h-6 object-contain"
+              />
+              <span className="text-lg font-semibold text-gray-800 dark:text-white tracking-tighter">
+                juansource.
+              </span>
             </div>
+
             {/* replaced "see all" with info icon */}
             <button
               onClick={() => setShowInfo(true)}
@@ -424,15 +433,31 @@ export default function App() {
             </button>
           </div>
 
-          <div className="mt-2 pb-2 border-b border-gray-200 dark:border-[#2B2C2C]">
+         <div className="mt-2 px-2 py-4 border-b border-gray-200 dark:border-[#2B2C2C] flex items-center justify-between">
             <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-slate-300">
               Our top 5 news sources
             </h3>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5 text-[#6C63FF]"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <path d="M3 17l6-6 4 4 8-8" />
+                  <circle cx="3" cy="17" r="1" fill="currentColor" />
+                  <circle cx="9" cy="11" r="1" fill="currentColor" />
+                  <circle cx="13" cy="15" r="1" fill="currentColor" />
+                  <circle cx="21" cy="7" r="1" fill="currentColor" />
+                </svg>
+
           </div>
+
 
           <div className="space-y-4">
             {credibleSources.map((source) => (
-              <div key={source.name} className="p-4 rounded-lg hover:bg-gray-50 dark:hover:bg-[#17171C] transition-colors">
+              <div key={source.name} className="px-2 py-4 rounded-lg hover:bg-gray-50 dark:hover:bg-[#17171C] transition-colors">
                 <h4 className="text-md font-medium">{source.name}</h4>
                 <p className="mt-2 text-sm text-gray-500 dark:text-slate-300">{source.tagline}</p>
               </div>
@@ -469,7 +494,8 @@ export default function App() {
           <div className="fixed inset-0 z-50">
             {/* backdrop */}
             <div
-              className="absolute inset-0 bg-black/40 dark:bg-black/60"
+                  className="absolute inset-0 bg-black/40 dark:bg-black/60 backdrop-blur-sm"
+
               onClick={() => setShowInfo(false)}
             />
             {/* dialog */}
@@ -477,7 +503,7 @@ export default function App() {
               <div
                 role="dialog"
                 aria-modal="true"
-                className="w-full max-w-3xl rounded-2xl bg-white dark:bg-[#101012] border border-gray-200 dark:border-none shadow-2xl"
+                className="w-full max-w-2xl rounded-2xl bg-white dark:bg-[#101012] border border-gray-200 dark:border-none shadow-2xl"
               >
                 {/* header */}
                <div className="flex items-center justify-center relative px-6 py-4 border-b border-gray-100 dark:border-[#2B2C2C]">
@@ -514,7 +540,7 @@ export default function App() {
                             : 'bg-transparent text-gray-600 dark:text-slate-300 hover:text-gray-800 dark:hover:text-slate-100'
                         }`}
                       >
-                        About Us
+                        About
                       </button>
                       <button
                         onClick={() => setAboutTab('how')}
@@ -530,24 +556,25 @@ export default function App() {
                   </div>
 
                   {/* body */}
-                  <div className="px-2 sm:px-6 py-6 text-sm text-gray-700 dark:text-slate-200">
+                  <div className="px-2 sm:px-6 pb-6 text-sm text-gray-700 dark:text-slate-200">
                     {/* logo row */}
-                    <div className="flex items-center justify-center my-6">
-                      <div className="text-3xl font-extrabold tracking-widest text-gray-800 dark:text-slate-100">LOGO</div>
+                    <div className="flex items-center justify-center gap-2 my-8 ">
+                      <img
+                        src={Logo}
+                        alt="JuanSource logo"
+                        className="w-8 h-8 object-contain"
+                      />
+                      <span className="text-2xl font-semibold text-gray-800 dark:text-white tracking-tighter">
+                        juansource.
+                      </span>
                     </div>
 
                     {aboutTab === 'about' ? (
                       <div className="space-y-3">
-                        <p>
-                          Lorem Ipsum is simply dummy text of the printing and typesetting industry. It has been the
-                          industry’s standard dummy text ever since the 1500s, when an unknown printer took a galley of
-                          type and scrambled it to make a type specimen book.
+                        <p className='text-justify'>
+                          <strong>JuanSource</strong> is a fact-checking tool that combines Generative AI (Gemini) with real-time Google Search to verify information and detect misleading claims. Designed to combat the spread of fake news and disinformation in the Philippines, especially during elections and major public issues. JuanSource empowers users to stay informed and think critically.
                         </p>
-                        <p>
-                          It survived not only five centuries, but also the leap into electronic typesetting, remaining
-                          essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets
-                          containing Lorem Ipsum passages.
-                        </p>
+         
                       </div>
                     ) : (
                      <div className="space-y-3">
@@ -564,7 +591,7 @@ export default function App() {
                             <strong>Run the check</strong> – JuanSource will search reliable sources and gather evidence.
                           </li>
                           <li>
-                            <strong>View the result</strong> – See if the claim is true, false, or unverified, along with key references.
+                            <strong>View the result</strong> – See if the claim is true or false, along with key references.
                           </li>
                         </ol>
 
@@ -573,6 +600,11 @@ export default function App() {
 
                     )}
                   </div>
+
+                    <div className="flex items-center justify-center my-6 text-xs text-[#A4A4A4] dark:text-[#505050]">
+                      © 2025 JuanSource. All rights reserved.
+                    </div>
+
                 </div>
               </div>
             </div>
