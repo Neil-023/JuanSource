@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from fact_checker import run_fact_check
+from backend.app.fact_checker import run_fact_check
 
 app = FastAPI(title="JuanSource API")
 
