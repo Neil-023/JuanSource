@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import image from './assets/picture.png'
 import verifiedIcon from './assets/verified.png'
 import fakeIcon from './assets/fake.png'
+import './index.css'
 
 function sleep(ms) {
   return new Promise((res) => setTimeout(res, ms))
@@ -39,8 +40,8 @@ function FinalResultCard({ headline, summary, verdict }) {
       {/* Badge */}
       <div className="flex justify-center mb-4">
         <div
-          className={`inline-block px-4 py-1 rounded-full text-sm font-semibold ${
-            isVerified ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'
+          className={`inline-block px-4 py-1 rounded-md text-sm font-semibold ${
+            isVerified ? 'bg-[#DEFFC4] text-[#5CC10E] dark:bg-[#17270A] text-[#5CC10E]' : 'bg-rose-100 text-rose-800'
           }`}
         >
           {isVerified ? 'Real Claim' : 'Fake Claim'}
@@ -205,7 +206,7 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f9f9f9] text-gray-800 dark:bg-slate-950 dark:text-slate-100">
+    <div className="min-h-screen bg-[#f9f9f9] text-gray-800 dark:bg-[#101012] dark:text-white transition-colors duration-300">
       <div className="max-w-screen-4xl mx-auto relative px-4 sm:px-6 lg:px-8 py-12 lg:pr-[520px]">
         {/* Main Screen */}
         <main className="w-full flex flex-col min-h-[70vh]">
@@ -297,7 +298,7 @@ export default function App() {
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder="Not sure if it's true? Type it here..."
-                  className="w-full pl-5 pr-12 py-4 rounded-xl bg-white dark:bg-slate-900 shadow-lg placeholder-gray-400 dark:placeholder-slate-400 text-gray-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-purple-300 dark:focus:ring-purple-600/60 border border-transparent dark:border-slate-700"
+                  className="w-full pl-5 pr-12 py-4 rounded-xl bg-white dark:bg-[#1B1C22] shadow-lg placeholder-gray-400 dark:placeholder-[#505050] text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-300 dark:focus:ring-purple-600/60 border border-transparent"
                 />
 
                 <button
