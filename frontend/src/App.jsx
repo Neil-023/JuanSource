@@ -90,7 +90,7 @@ function FinalResultCard({ headline, summary, verdict }) {
         {/* Text */}
         <div className="mt-6 flex items-center gap-1">
           {/* check icon */}
-          <div className="mt-1">
+          <div className="mt-1  hidden md:block">
             {isVerified ? (
               <svg className="h-6 w-6 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" xmlns="http://www.w3.org/2000/svg">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
@@ -223,7 +223,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#f9f9f9] text-gray-800 dark:bg-[#101012] dark:text-white transition-colors duration-300">
-      <div className="max-w-screen-4xl mx-auto relative px-4 sm:px-6 lg:px-8 lg:pr-[500px] xl:pr-[520px] py-12">
+      <div className="max-w-screen-4xl mx-auto relative px-0 sm:px-0 lg:px-8 lg:pr-[500px] xl:pr-[520px] py-12">
 
         {/* Main Screen */}
         <main className="w-full flex flex-col min-h-[90vh]">
@@ -254,7 +254,7 @@ export default function App() {
             ) : (
               <div
                 ref={scrollRef}
-                className="space-y-6 max-h-[80vh] overflow-y-auto pr-4 mx-auto w-[80%] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"> 
+                className="space-y-6 max-h-[80vh] overflow-y-auto pr-4 mx-auto w-[90%] md:w-[80%] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"> 
           
                 {messages.map((m) => (
                   <div
