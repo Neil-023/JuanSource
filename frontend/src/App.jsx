@@ -48,10 +48,10 @@ function FinalResultCard({ headline, summary, verdict }) {
       </div>
 
       {/* Media card */}
-      <div className="mx-auto w-full max-w-xl rounded-lg bg-white shadow-lg p-6 relative">
-        <div className="bg-white rounded-md p-6 flex items-center justify-center">
+      <div className="mx-auto w-full max-w-xl rounded-lg bg-white dark:bg-slate-900 shadow-lg p-6 relative">
+        <div className="bg-white dark:bg-slate-900 rounded-md p-6 flex items-center justify-center">
           {/* Decorative inner card with subtle right-bottom drop shadow */}
-          <div className="w-full max-w-md h-48 bg-white rounded-md flex items-center justify-center relative"
+          <div className="w-full max-w-md h-48 bg-white dark:bg-slate-800 rounded-md flex items-center justify-center relative"
                style={{ boxShadow: '8px 8px 0 rgba(0,0,0,0.08)' }}
           >
             {/* centered icon (verified vs fake) */}
@@ -87,8 +87,8 @@ function FinalResultCard({ headline, summary, verdict }) {
           </div>
 
           <div>
-            {headline && <div className="text-sm font-semibold text-gray-900 mb-1">{headline}</div>}
-            <div className="text-sm text-gray-700">{summary}</div>
+            {headline && <div className="text-sm font-semibold text-gray-900 dark:text-slate-100 mb-1">{headline}</div>}
+            <div className="text-sm text-gray-700 dark:text-slate-200">{summary}</div>
           </div>
         </div>
       </div>
@@ -100,6 +100,7 @@ export default function App() {
   const [message, setMessage] = useState('')
   const [query, setQuery] = useState('')
   const [messages, setMessages] = useState([]) // chat messages (both user + backend steps)
+  const [isDark, setIsDark] = useState(false)
   const idRef = useRef(1)
   const scrollRef = useRef(null)
   const hasDraft = query.trim().length > 0
@@ -111,6 +112,20 @@ export default function App() {
       .then((data) => setMessage(data.message))
       .catch(() => setMessage('(backend not reachable)'))
   }, [])
+
+  // initialize theme from storage or system preference
+  useEffect(() => {
+    const stored = localStorage.getItem('theme')
+    const initial = stored ?? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+    setIsDark(initial === 'dark')
+    document.documentElement.classList.toggle('dark', initial === 'dark')
+  }, [])
+
+  // apply theme on change
+  useEffect(() => {
+    localStorage.setItem('theme', isDark ? 'dark' : 'light')
+    document.documentElement.classList.toggle('dark', isDark)
+  }, [isDark])
 
   // ensure scroll to bottom when messages change
   useEffect(() => {
@@ -176,7 +191,7 @@ export default function App() {
     // after all steps, add final result (rendered as card)
     const finalId = idRef.current++
     setMessages((m) => [
-      ...m,
+      ...m.filter((msg) => msg.id !== stepId),
       {
         id: finalId,
         role: 'assistant',
@@ -190,23 +205,23 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f9f9f9] text-gray-800">
-      <div className="max-w-screen-xl mx-auto relative px-4 sm:px-6 lg:px-8 py-12 mr-[520px]">
-        {/* Main area */}
+    <div className="min-h-screen bg-[#f9f9f9] text-gray-800 dark:bg-slate-950 dark:text-slate-100">
+      <div className="max-w-screen-4xl mx-auto relative px-4 sm:px-6 lg:px-8 py-12 lg:pr-[520px]">
+        {/* Main Screen */}
         <main className="w-full flex flex-col min-h-[70vh]">
           <div className="flex-1">
             {messages.length === 0 ? (
               // Hero view when no chat yet
               <div className="flex flex-col items-center text-center gap-8 py-16 sm:py-20">
-                <div className="w-full max-w-2xl">
-                  <div className="mx-auto bg-white/0 rounded-2xl p-10 flex items-center justify-center">
+                <div className="w-full max-w-2xl lg:max-w-4xl mx-auto">
+                  <div className="mx-auto rounded-2xl p-10 flex items-center justify-center bg-white/0">
                     <div className="w-full h-64 flex items-center justify-center">
                       <img src={image} alt="Image" className="w-full h-full max-h-64 object-contain" />
                     </div>
                   </div>
                 </div>
 
-                <h1 className="text-2xl sm:text-3xl md:text-4xl font-semibold text-gray-900 max-w-3xl">
+                <h1 className="text-2xl sm:text-3xl md:text-4xl font-semibold text-gray-900 dark:text-white max-w-3xl">
                   Your go-to tool for verifying facts and exposing fake news.
                 </h1>
 
@@ -219,7 +234,10 @@ export default function App() {
                 </div>
               </div>
             ) : (
-              <div ref={scrollRef} className="space-y-6 max-h-[65vh] overflow-y-auto pr-4">
+              <div
+                ref={scrollRef}
+                className="space-y-6 max-h-[65vh] overflow-y-auto pr-4 mx-auto w-full max-w-3xl lg:max-w-5xl"
+              >
                 {messages.map((m) => (
                   <div
                     key={m.id}
@@ -227,12 +245,16 @@ export default function App() {
                   >
                     {/* assistant avatar */}
                     {m.role === 'assistant' && (
-                      <div className="w-8 h-8 rounded-full bg-white shadow flex items-center justify-center text-sm font-medium">
+                      <div className="w-8 h-8 rounded-full bg-white dark:bg-slate-800 shadow flex items-center justify-center text-sm font-medium">
                         A
                       </div>
                     )}
 
-                    <div className={`rounded-xl p-4 shadow-md max-w-[70%] ${m.role === 'user' ? 'bg-purple-500 text-white rounded-br-none' : 'bg-white text-gray-700 rounded-bl-none'}`}>
+                    <div className={`rounded-xl p-4 shadow-md max-w-[70%] ${
+                      m.role === 'user'
+                        ? 'bg-purple-500 text-white rounded-br-none'
+                        : 'bg-white text-gray-700 dark:bg-slate-800 dark:text-slate-100 rounded-bl-none'
+                    }`}>
                       {/* if final result -> show the result card */}
                       {m.final ? (
                         <FinalResultCard headline={m.headline} summary={m.text} verdict={m.verdict} />
@@ -269,13 +291,13 @@ export default function App() {
           </div>
 
           <div className="mt-8">
-            <form onSubmit={send} className="max-w-7xl px-4 sm:px-6 lg:px-8">
+            <form onSubmit={send} className="max-w-3xl lg:max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
               <div className="relative">
                 <input
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder="Not sure if it's true? Type it here..."
-                  className="w-full pl-5 pr-12 py-4 rounded-xl bg-white shadow-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-300"
+                  className="w-full pl-5 pr-12 py-4 rounded-xl bg-white dark:bg-slate-900 shadow-lg placeholder-gray-400 dark:placeholder-slate-400 text-gray-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-purple-300 dark:focus:ring-purple-600/60 border border-transparent dark:border-slate-700"
                 />
 
                 <button
@@ -293,7 +315,7 @@ export default function App() {
         </main>
 
         {/* Right sidebar (fixed) */}
-        <aside className="hidden lg:flex flex-col fixed top-0 right-0 h-screen w-[500px] border-l bg-white p-6 overflow-y-auto">
+        <aside className="hidden lg:flex flex-col fixed top-0 right-0 h-screen w-[500px] border-l border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 overflow-y-auto">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-purple-50 rounded-md">
@@ -319,11 +341,25 @@ export default function App() {
 
         {/* Floating theme toggle (bottom-right) */}
         <div className="fixed right-4 bottom-4 sm:right-6 sm:bottom-6">
-          <button className="p-3 sm:p-4 rounded-full bg-white shadow-lg flex items-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-yellow-500" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 3v2M12 19v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M1 12h2M21 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4" />
-              <circle cx="12" cy="12" r="3" fill="currentColor" />
-            </svg>
+          <button
+            onClick={() => setIsDark((v) => !v)}
+            className="p-3 sm:p-4 rounded-full bg-white dark:bg-slate-800 shadow-lg flex items-center justify-center"
+            aria-pressed={isDark}
+            aria-label="Toggle dark mode"
+            title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+          >
+            {isDark ? (
+              // Sun icon (light theme target)
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-yellow-400" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v2m0 12v2m8-8h2M2 12H4m13.657-6.343l1.414 1.414M4.929 19.071l1.414-1.414m0-10.314L4.93 5.657M19.071 19.07l-1.414-1.414" />
+                <circle cx="12" cy="12" r="3" fill="currentColor" />
+              </svg>
+            ) : (
+              // Moon icon (dark theme target)
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-slate-700" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />
+              </svg>
+            )}
           </button>
         </div>
       </div>
