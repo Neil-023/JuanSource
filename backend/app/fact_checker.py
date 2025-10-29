@@ -1,25 +1,47 @@
 import os
-from dotenv import load_dotenv
+import re
+from pathlib import Path
+from typing import Optional
+from dotenv import load_dotenv, find_dotenv
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_community.utilities import GoogleSearchAPIWrapper
-from langchain_core.tools import Tool
 from langchain_core.prompts import PromptTemplate
 
-load_dotenv()
+load_dotenv(find_dotenv(usecwd=True) or Path(__file__).resolve().parents[2] / ".env")
 
-# I. The Reasoning Engine (LLM)
-llm = ChatGoogleGenerativeAI(
-    model="gemini-2.5-flash",
-    temperature=0.1,
-)
+_llm: Optional[ChatGoogleGenerativeAI] = None
+_search: Optional[GoogleSearchAPIWrapper] = None
 
-# II. The Retrieval Tool (Google Search)
-search = GoogleSearchAPIWrapper()
-google_search_tool = Tool(
-    name="Google Search",
-    description="A tool for retrieving real-time, external facts, and evidence from the internet to fact-check a claim. Returns a list of search results with titles, links, and snippets.",
-    func=lambda query: search.results(query, num_results=10)
-)
+def _ensure_google_search() -> GoogleSearchAPIWrapper:
+    global _search
+    if _search is not None:
+        return _search
+    api_missing = [key for key in ('GOOGLE_API_KEY', 'GOOGLE_CSE_ID') if not os.getenv(key)]
+    if api_missing:
+        raise RuntimeError(
+            f"Missing Google Custom Search credentials: {', '.join(api_missing)}. "
+            "Set them in your environment or .env file."
+        )
+    _search = GoogleSearchAPIWrapper()
+    return _search
+
+def _ensure_llm() -> ChatGoogleGenerativeAI:
+    global _llm
+    if _llm is not None:
+        return _llm
+    api_key = os.getenv('GOOGLE_API_KEY')
+    creds_path = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
+    if not api_key and not creds_path:
+        raise RuntimeError(
+            "No Gemini credentials found. Provide GOOGLE_API_KEY or GOOGLE_APPLICATION_CREDENTIALS "
+            "before starting the backend."
+        )
+    _llm = ChatGoogleGenerativeAI(
+        model="gemini-2.5-flash",
+        temperature=0.1,
+        google_api_key=api_key or None,
+    )
+    return _llm
 
 # III. The Reasoning Prompt Template
 RAG_PROMPT_TEMPLATE = """
@@ -51,21 +73,52 @@ Evidence: [
 """
 RAG_PROMPT = PromptTemplate.from_template(RAG_PROMPT_TEMPLATE)
 
+def _extract_section(text: str, label: str) -> str:
+    pattern = re.compile(rf"{label}\s*(.*?)(?=\n[A-Z][a-zA-Z]+:|$)", re.IGNORECASE | re.DOTALL)
+    match = pattern.search(text)
+    return match.group(1).strip() if match else ""
+
+def _normalise_classification(value: str) -> str:
+    lowered = (value or "").lower()
+    if any(token in lowered for token in ["real", "true", "verified"]):
+        return "real"
+    if any(token in lowered for token in ["fake", "false", "hoax"]):
+        return "fake"
+    return "unknown"
+
+def _parse_fact_check_output(raw: str):
+    classification = _extract_section(raw, "Classification:")
+    reasoning = _extract_section(raw, "Reasoning:")
+    evidence_block = _extract_section(raw, "Evidence:")
+    evidence = re.findall(r"https?://[^\s\"')]+", evidence_block or "")
+    return _normalise_classification(classification), reasoning or raw.strip(), evidence
+
 def run_fact_check(claim: str):
+    if not claim.strip():
+        return {"error": "Claim must not be empty."}
     print(f"1. Verifying Claim: '{claim}'")
     try:
+        search = _ensure_google_search()
         print("2. Performing Google Search...")
-        search_results = google_search_tool.run(claim)
+        search_results = search.results(claim, num_results=10)
         print("3. Evidence retrieved.")
     except Exception as e:
         print(f"Error during Google Search: {e}")
-        return {"error": "Could not perform Google Search. Please check your GOOGLE_API_KEY and GOOGLE_CSE_ID."}
+        return {"error": str(e)}
 
     try:
+        llm = _ensure_llm()
         final_prompt = RAG_PROMPT.format(query=claim, search_results=search_results)
         print("4. Sending evidence to Gemini for Reasoning...")
         response = llm.invoke(final_prompt)
-        return {"result": response.content}
+        raw_text = getattr(response, "content", str(response)).strip()
+        classification, reasoning, evidence = _parse_fact_check_output(raw_text)
+        return {
+            "classification": classification,
+            "reasoning": reasoning,
+            "evidence": evidence,
+            "raw": raw_text,
+        }
     except Exception as e:
         print(f"Error during Gemini Reasoning: {e}")
-        return {"error": "Could not get reasoning from AI model. Please check your GEMINI_API_KEY."}
+        return {"error": str(e)}

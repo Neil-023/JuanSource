@@ -11,36 +11,47 @@ import verifiedIconDark from './assets/verified-dark.svg'
 
 import './index.css'
 
-function sleep(ms) {
-  return new Promise((res) => setTimeout(res, ms))
-}
-
-const SAMPLE_FACTS = [
-  {
-    keywords: ['covid vaccines cause microchips', 'vaccine microchip'],
-    verdict: 'fake',
-    headline: 'Claim: COVID-19 vaccines implant microchips',
-    summary:
-      'Scientific consensus confirms COVID-19 vaccines do not contain microchips; this claim is false.',
-  },
-  {
-    keywords: ['moon landing', 'apollo 11 mission'],
-    verdict: 'verified',
-    headline: 'Claim: Apollo 11 moon landing happened',
-    summary:
-      'Independent telemetry, footage, and eyewitness reports verify the Apollo 11 moon landing as true.',
-  },
-  {
-    keywords: ['climate change hoax', 'climate change is a hoax'],
-    verdict: 'fake',
-    headline: 'Claim: Climate change is a hoax',
-    summary:
-      'Over 97% of climate scientists agree that climate change is real and driven by human activity.',
-  },
+const API_BASE = import.meta.env.VITE_API_BASE ?? 'http://localhost:8000'
+const PROGRESS_STEPS = [
+  'Sending claim to fact-checker…',
+  'Collecting live evidence 🔎',
+  'Analyzing claim with Gemini ✨',
+  'Summarizing verdict 📝',
 ]
 
-function FinalResultCard({ headline, summary, verdict }) {
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
+
+const normaliseVerdict = (value) => {
+  const lowered = (value || '').toLowerCase()
+  if (lowered.includes('real') || lowered.includes('true') || lowered.includes('verified')) return 'verified'
+  if (lowered.includes('fake') || lowered.includes('false')) return 'fake'
+  return 'unknown'
+}
+
+const describeBackendError = (raw) => {
+  if (!raw) return 'The fact-checker is unavailable right now. Please try again shortly.'
+  const lowered = raw.toLowerCase()
+  if (lowered.includes('failed to fetch') || lowered.includes('networkerror')) {
+    return `Unable to reach the fact-checker at ${API_BASE}. Make sure the FastAPI server is running (uvicorn backend.app.main:app --reload), that it’s listening on port 8000, and that no firewall/CORS rules block the request.`
+  }
+  if (lowered.includes('google_api_key') || lowered.includes('google cse id')) {
+    return 'Backend is missing Google Search credentials (set GOOGLE_API_KEY and GOOGLE_CSE_ID).'
+  }
+  if (lowered.includes('gemini')) {
+    return 'Gemini API credentials are missing or invalid on the backend (check GEMINI_API_KEY).'
+  }
+  return raw
+}
+
+function FinalResultCard({ headline, reasoning, verdict, evidence }) {
   const isVerified = verdict === 'verified'
+  const isFake = verdict === 'fake'
+  const badgeClass = isVerified
+    ? 'bg-emerald-100 text-emerald-800'
+    : isFake
+      ? 'bg-rose-100 text-rose-800'
+      : 'bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-200'
+
   return (
     <div className="w-full flex flex-col items-center">
     
@@ -92,43 +103,62 @@ function FinalResultCard({ headline, summary, verdict }) {
           {/* check icon */}
           <div className="mt-1  hidden md:block">
             {isVerified ? (
-              <svg className="h-6 w-6 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" xmlns="http://www.w3.org/2000/svg">
+              <svg className="h-6 w-6 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
               </svg>
             ) : (
-              <svg className="h-6 w-6 text-rose-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" xmlns="http://www.w3.org/2000/svg">
+              <svg className="h-6 w-6 text-rose-600" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
               </svg>
             )}
           </div>
-
           <div>
             {headline && <div className="text-sm font-semibold text-gray-900 dark:text-slate-100 mb-1">{headline}</div>}
-            <div className="text-sm text-gray-700 dark:text-slate-200">{summary}</div>
+            <div className="text-sm text-gray-700 dark:text-slate-200">{reasoning}</div>
           </div>
         </div>
-    </div>
+        {evidence?.length > 0 && (
+          <div className="mt-5">
+            <p className="text-xs uppercase tracking-wide text-gray-400 dark:text-slate-400">Sources</p>
+            <ul className="mt-2 space-y-1 text-sm">
+              {evidence.map((url) => (
+                <li key={url}>
+                  <a
+                    href={url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-purple-500 dark:text-purple-300 hover:underline break-all"
+                  >
+                    {url}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
+    
   )
 }
 
 export default function App() {
-  const [message, setMessage] = useState('')
   const [query, setQuery] = useState('')
-  const [messages, setMessages] = useState([]) // chat messages (both user + backend steps)
+  const [messages, setMessages] = useState([])
   const [isDark, setIsDark] = useState(false)
   const [showInfo, setShowInfo] = useState(false)
   const [aboutTab, setAboutTab] = useState('about')
+  const [sidebarOpen, setSidebarOpen] = useState(true)
   const idRef = useRef(1)
   const scrollRef = useRef(null)
   const hasDraft = query.trim().length > 0
 
-  useEffect(() => {
-    // initial backend message (optional)
-    fetch('/api/hello')
-      .then((res) => res.json())
-      .then((data) => setMessage(data.message))
-      .catch(() => setMessage('(backend not reachable)'))
-  }, [])
+  const credibleSources = [
+    { name: 'ABS-CBN News', tagline: 'Trusted nationwide coverage of Philippine events.' },
+    { name: 'GMA News', tagline: 'Independent reporting from GMA Network journalists.' },
+    { name: 'Rappler', tagline: 'Investigative stories and fact-checking initiatives.' },
+    { name: 'Philippine Daily Inquirer', tagline: 'In-depth national and regional reporting.' },
+    { name: 'Philstar', tagline: 'Daily news and analysis from The Philippine Star.' },
+  ]
 
   // initialize theme from storage or system preference
   useEffect(() => {
@@ -151,82 +181,121 @@ export default function App() {
     }
   }, [messages, hasDraft])
 
-  const backendStepsFor = (q) => [
-    `Let's see what we find about: "${q}"`,
-    'Checking Google for more info 🔎',
-    'Evidence gathered! 📄',
-    'Forwarding data to Gemini for reasoning ✨',
-  ]
-
   const send = async (e) => {
     if (e) e.preventDefault()
     const trimmed = query.trim()
     if (!trimmed) return
 
-    // add user bubble
     const userId = idRef.current++
     setMessages((m) => [
       ...m,
       { id: userId, role: 'user', text: trimmed, time: Date.now() },
     ])
-
     setQuery('')
 
-    const steps = backendStepsFor(trimmed)
-
-    const normalized = trimmed.toLowerCase()
-    const match = SAMPLE_FACTS.find((item) =>
-      item.keywords.some((keyword) => normalized.includes(keyword))
-    )
-    const verdict = match?.verdict ?? 'unknown'
-    const summary =
-      match?.summary ??
-      `Result: no matching fact-check found for "${trimmed}". We'll keep investigating.`
-    const headline = match?.headline
-
-    // single placeholder for the assistant step
     const stepId = idRef.current++
     setMessages((m) => [
       ...m,
       { id: stepId, role: 'assistant', text: '', loading: true },
     ])
 
-    for (let i = 0; i < steps.length; i++) {
-      await sleep(900 + Math.random() * 700) // wait before showing the next step
-      const currentStep = steps[i]
+    try {
+      for (let i = 0; i < PROGRESS_STEPS.length; i++) {
+        await sleep(600 + Math.random() * 600)
+        const currentStep = PROGRESS_STEPS[i]
+        setMessages((m) =>
+          m.map((msg) =>
+            msg.id === stepId
+              ? { ...msg, text: currentStep, loading: i !== PROGRESS_STEPS.length - 1 }
+              : msg
+          )
+        )
+      }
 
-      // update same message instead of stacking
+      const response = await fetch(`${API_BASE}/fact-check`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ claim: trimmed }),
+      })
+      let payload
+      try {
+        payload = await response.json()
+      } catch {
+        payload = null
+      }
+      if (!response.ok) {
+        const detail = payload?.detail ?? payload?.error ?? 'Fact-check request failed.'
+        throw new Error(detail)
+      }
+      const data = payload ?? {}
+      const finalId = idRef.current++
+      setMessages((m) => [
+        ...m.filter((msg) => msg.id !== stepId),
+        {
+          id: finalId,
+          role: 'assistant',
+          text: data.reasoning ?? data.raw ?? 'No reasoning available.',
+          loading: false,
+          final: true,
+          verdict: normaliseVerdict(data.classification),
+          headline: `Claim: "${trimmed}"`,
+          evidence: data.evidence ?? [],
+        },
+      ])
+    } catch (error) {
+      const friendly = describeBackendError(error instanceof Error ? error.message : String(error))
       setMessages((m) =>
         m.map((msg) =>
           msg.id === stepId
-            ? { ...msg, text: currentStep, loading: i === steps.length - 1 ? false : true }
+            ? { ...msg, text: friendly, loading: false, error: true }
             : msg
         )
       )
     }
-
-    // after all steps, add final result (rendered as card)
-    const finalId = idRef.current++
-    setMessages((m) => [
-      ...m.filter((msg) => msg.id !== stepId),
-      {
-        id: finalId,
-        role: 'assistant',
-        text: summary,
-        loading: false,
-        final: true,
-        verdict,
-        headline,
-      },
-    ])
   }
 
   return (
     <div className="min-h-screen bg-[#f9f9f9] text-gray-800 dark:bg-[#101012] dark:text-white transition-colors duration-300">
-      <div className="max-w-screen-4xl mx-auto relative px-0 sm:px-0 lg:px-8 lg:pr-[500px] xl:pr-[520px] py-12">
-
+      <div
+        className={`max-w-screen-4xl mx-auto relative px-0 sm:px-0 lg:px-8 py-12 ${
+          sidebarOpen ? 'lg:pr-[500px] xl:pr-[520px]' : 'lg:pr-12'
+        }`}
+      >
         {/* Main Screen */}
-        <main className="w-full flex flex-col min-h-[90vh]">
+        <main className="w-full flex flex-col min-h-[70vh]">
+          <div className="flex justify-end mb-4 lg:hidden">
+            <button
+              onClick={() => setShowInfo(true)}
+              className="p-2 rounded-full bg-white dark:bg-slate-800 shadow hover:bg-gray-100 dark:hover:bg-slate-700"
+              aria-label="Open information modal"
+              title="About"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-500 dark:text-slate-300" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12A9 9 0 113 12a9 9 0 0118 0z"/>
+              </svg>
+            </button>
+          </div>
+          <div className="hidden lg:flex justify-end mb-4">
+            <button
+              onClick={() => setSidebarOpen((open) => !open)}
+              className="p-2 rounded-full bg-white dark:bg-[#1B1C22] shadow hover:bg-gray-100 dark:hover:bg-[#17171C]"
+              aria-label={sidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5 text-gray-500 dark:text-slate-300"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+              >
+                {sidebarOpen ? (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 18l-6-6 6-6" />
+                ) : (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 18l6-6-6-6" />
+                )}
+              </svg>
+            </button>
+          </div>
           <div className="flex-1">
             {messages.length === 0 ? (
               // Hero view when no chat yet
@@ -244,11 +313,8 @@ export default function App() {
                 </h1>
 
                 <div className="w-full max-w-3xl">
-                  <p className="mt-4 text-sm text-gray-500 sm:text-base">Disclaimer here (if needed) lorem ipsum lorem ipsum</p>
+                  <p className="mt-4 text-sm text-gray-500 sm:text-base">This tool uses Generative AI (Gemini) and real-time web search (Google Search) for factual verification. Always verify critical information independently. Stay vigilant, stay informed. </p>
 
-                  <div className="mt-6 text-sm text-gray-600">
-                    <strong>Backend:</strong> {message || <span className="text-gray-400">(no message yet)</span>}
-                  </div>
                 </div>
               </div>
             ) : (
@@ -275,7 +341,7 @@ export default function App() {
                     }`}>
                       {/* if final result -> show the result card */}
                       {m.final ? (
-                        <FinalResultCard headline={m.headline} summary={m.text} verdict={m.verdict} />
+                        <FinalResultCard headline={m.headline} reasoning={m.text} verdict={m.verdict} evidence={m.evidence} />
                       ) :  (
                         <div className="flex items-center gap-2">
                           <div>{m.text}</div>
@@ -335,14 +401,14 @@ export default function App() {
         </main>
 
         {/* Right sidebar (fixed) */}
-        <aside className="hidden lg:flex flex-col fixed top-0 right-0 h-screen w-[500px] border-l border-gray-200 dark:border-none bg-white dark:bg-[#1A1A1F] p-6 overflow-y-auto">
+        <aside
+          className={`hidden lg:flex flex-col fixed top-0 right-0 h-screen w-[500px] border-l border-gray-200 dark:border-none bg-white dark:bg-[#1A1A1F] p-6 overflow-y-auto transition-transform duration-300 ${
+            sidebarOpen ? 'translate-x-0' : 'translate-x-full pointer-events-none'
+          }`}
+        >
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-purple-500 rounded-md">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-purple-600" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12h18M3 6h18M3 18h18" />
-                </svg>
-              </div>
+             
              
             </div>
             {/* replaced "see all" with info icon */}
@@ -358,37 +424,17 @@ export default function App() {
             </button>
           </div>
 
+          <div className="mt-2 pb-2 border-b border-gray-200 dark:border-[#2B2C2C]">
+            <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-slate-300">
+              Our top 5 news sources
+            </h3>
+          </div>
+
           <div className="space-y-4">
-             <div className="flex items-center gap-1 p-3">
-                {/* simple bar-chart icon (left) */}
-                <svg
-                  className="flex-shrink-0"
-                  width="24"
-                  height="24"
-                  viewBox="0 0 36 36"
-                  fill="none"
-                  aria-hidden="true"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  {/* background circle for contrast (optional) */}
-                  <circle cx="18" cy="18" r="17" fill="transparent" />
-                  {/* three bars */}
-                  <rect x="8" y="18" width="4" height="10" rx="1" fill="#6C63FF" />
-                  <rect x="15" y="12" width="4" height="16" rx="1" fill="#6C63FF" opacity="0.9" />
-                  <rect x="22" y="8" width="4" height="20" rx="1" fill="#6C63FF" opacity="0.8" />
-                </svg>
-
-                {/* title */}
-                <div>
-                  <h4 className="text-md font-medium">Top 5 Lorem Ipsum</h4>
-                </div>
-              </div>
-
-            {Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="p-4 rounded-lg hover:bg-gray-50 dark:hover:bg-[#17171C] transition-colors">
-                <h4 className="text-md font-medium">Top 5 Lorem Ipsum</h4>
-                <div className="text-xs text-gray-300 mb-2 ">2 days ago • Author</div>
-                <p className="mt-1 text-sm text-gray-400 line-clamp-3">a search for 'lorem ipsum' will uncover many web sites still in their infancy. Various versions have evolved over the years...</p>
+            {credibleSources.map((source) => (
+              <div key={source.name} className="p-4 rounded-lg hover:bg-gray-50 dark:hover:bg-[#17171C] transition-colors">
+                <h4 className="text-md font-medium">{source.name}</h4>
+                <p className="mt-2 text-sm text-gray-500 dark:text-slate-300">{source.tagline}</p>
               </div>
             ))}
           </div>
