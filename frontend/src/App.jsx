@@ -318,7 +318,7 @@ export default function App() {
         </main>
 
         {/* Right sidebar (fixed) */}
-        <aside className="hidden lg:flex flex-col fixed top-0 right-0 h-screen w-[500px] border-l border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 overflow-y-auto">
+        <aside className="hidden lg:flex flex-col fixed top-0 right-0 h-screen w-[500px] border-l border-gray-200 dark:border-none bg-white dark:bg-[#1A1A1F] p-6 overflow-y-auto">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-purple-50 rounded-md">
@@ -326,7 +326,7 @@ export default function App() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12h18M3 6h18M3 18h18" />
                 </svg>
               </div>
-              <h3 className="text-sm font-semibold">Top 5 Lorem Ipsum</h3>
+             
             </div>
             {/* replaced "see all" with info icon */}
             <button
@@ -342,11 +342,12 @@ export default function App() {
           </div>
 
           <div className="space-y-4">
+            <div className="mt-2 text-xs text-gray-300">2 days ago • Author</div>
+             <h3 className="text-lg font-semibold mt-5">Top 5 Lorem Ipsum</h3>
             {Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-800">
-                <h4 className="text-lg font-medium">Top 5 Lorem Ipsum</h4>
+              <div key={i} className="py-3 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-800">
+                <h4 className="text-md font-medium">Top 5 Lorem Ipsum</h4>
                 <p className="mt-1 text-sm text-gray-400 line-clamp-3">a search for 'lorem ipsum' will uncover many web sites still in their infancy. Various versions have evolved over the years...</p>
-                <div className="mt-2 text-xs text-gray-300">2 days ago • Author</div>
               </div>
             ))}
           </div>
