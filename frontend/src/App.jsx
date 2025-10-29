@@ -259,7 +259,7 @@ export default function App() {
                 {messages.map((m) => (
                   <div
                     key={m.id}
-                    className={`flex items-start gap-4 ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                    className={`flex items-end gap-4 ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
                   >
                     {/* assistant avatar */}
                     {m.role === 'assistant' && (
@@ -268,25 +268,27 @@ export default function App() {
                       </div>
                     )}
 
-                    <div className={`rounded-xl p-4 shadow-md max-w-[70%]  ${
+                    <div className={`rounded-2xl p-4 shadow-md max-w-[70%]  ${
                       m.role === 'user'
-                        ? 'bg-purple-500 text-white rounded-br-none'
+                        ? 'bg-[#6C63FF] text-white rounded-br-none'
                         : 'bg-white text-gray-700 dark:bg-[#1B1C22] dark:text-slate-100 rounded-bl-none'
                     }`}>
                       {/* if final result -> show the result card */}
                       {m.final ? (
                         <FinalResultCard headline={m.headline} summary={m.text} verdict={m.verdict} />
-                      ) : (
-                        <>
+                      ) :  (
+                        <div className="flex items-center gap-2">
                           <div>{m.text}</div>
-                          {m.loading && <div className="mt-2"><div className="w-6 h-6 border-2 border-purple-500 rounded-full animate-spin border-t-transparent " /></div>}
-                        </>
+                          {m.loading && (
+                            <div className="w-5 h-5 border-2 border-[#6C63FF] rounded-full animate-spin border-t-transparent" />
+                          )}
+                        </div>
                       )}
                     </div>
 
                     {/* user avatar */}
                     {m.role === 'user' && (
-                      <div className="w-8 h-8 rounded-full bg-purple-500 text-white flex items-center justify-center text-sm font-medium">
+                      <div className="w-8 h-8 rounded-full bg-[#6C63FF] text-white flex items-center justify-center text-sm font-medium">
                         U
                       </div>
                     )}
@@ -296,7 +298,7 @@ export default function App() {
                 {/* draft preview while typing */}
                 {hasDraft && (
                   <div key="draft" className="flex items-start gap-4 justify-end">
-                    <div className="rounded-xl p-4 shadow-md max-w-[70%] bg-purple-500/80 text-white rounded-br-none">
+                    <div className="rounded-2xl  p-4 shadow-md max-w-[70%] bg-purple-500/80 text-white rounded-br-none">
                       {query}
                     </div>
                     <div className="w-8 h-8 rounded-full bg-purple-500 text-white flex items-center justify-center text-sm font-medium">
@@ -320,7 +322,7 @@ export default function App() {
 
                 <button
                   type="submit"
-                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-gradient-to-br from-purple-500 to-violet-600 p-2.5 sm:p-3 rounded-lg shadow-md transition-transform duration-150 hover:scale-105"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-[#6C63FF] p-2.5 sm:p-3 rounded-lg shadow-md transition-transform duration-150 hover:scale-105"
                   aria-label="submit-search"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -336,7 +338,7 @@ export default function App() {
         <aside className="hidden lg:flex flex-col fixed top-0 right-0 h-screen w-[500px] border-l border-gray-200 dark:border-none bg-white dark:bg-[#1A1A1F] p-6 overflow-y-auto">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-purple-50 rounded-md">
+              <div className="p-2 bg-purple-500 rounded-md">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-purple-600" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12h18M3 6h18M3 18h18" />
                 </svg>
@@ -346,7 +348,7 @@ export default function App() {
             {/* replaced "see all" with info icon */}
             <button
               onClick={() => setShowInfo(true)}
-              className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-slate-800"
+              className="p-2 rounded-full bg-[#F9F9F9] dark:bg-[#101012]"
               aria-label="Open information modal"
               title="About"
             >
@@ -429,42 +431,51 @@ export default function App() {
               <div
                 role="dialog"
                 aria-modal="true"
-                className="w-full max-w-3xl rounded-2xl bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 shadow-2xl"
+                className="w-full max-w-3xl rounded-2xl bg-white dark:bg-[#101012] border border-gray-200 dark:border-none shadow-2xl"
               >
                 {/* header */}
-                <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-slate-800">
-                  <h2 className="text-sm font-semibold text-gray-700 dark:text-slate-100">About JuanSource</h2>
+               <div className="flex items-center justify-center relative px-6 py-4 border-b border-gray-100 dark:border-[#2B2C2C]">
+                  <h2 className="text-md font-semibold text-gray-700 dark:text-slate-100 text-center">
+                    About JuanSource
+                  </h2>
                   <button
                     onClick={() => setShowInfo(false)}
-                    className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-slate-800"
+                    className="absolute right-6 p-2 rounded-full bg-[#F9F9F9] dark:bg-[#101012]"
                     aria-label="Close modal"
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-500 dark:text-slate-300" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5 text-gray-500 dark:text-slate-300"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                    >
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
                     </svg>
                   </button>
                 </div>
 
+
                 {/* tabs */}
                 <div className="px-6 pt-4">
                   <div className="flex items-center justify-center">
-                    <div className="inline-flex p-1 rounded-full bg-gray-100 dark:bg-slate-800/80">
+                    <div className="inline-flex p-1 rounded-xl bg-gray-100 dark:bg-[#1B1C22] gap-1">
                       <button
                         onClick={() => setAboutTab('about')}
-                        className={`px-4 py-1.5 text-sm rounded-full transition ${
+                        className={`px-4 py-1.5 text-sm rounded-xl transition ${
                           aboutTab === 'about'
-                            ? 'bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 shadow'
-                            : 'text-gray-600 dark:text-slate-300 hover:text-gray-800 dark:hover:text-slate-100'
+                            ? 'bg-white dark:bg-[#101012] text-gray-900 dark:text-slate-100 shadow'
+                            : 'bg-transparent text-gray-600 dark:text-slate-300 hover:text-gray-800 dark:hover:text-slate-100'
                         }`}
                       >
                         About Us
                       </button>
                       <button
                         onClick={() => setAboutTab('how')}
-                        className={`px-4 py-1.5 text-sm rounded-full transition ${
+                        className={`px-4 py-1.5 text-sm rounded-xl transition ${
                           aboutTab === 'how'
-                            ? 'bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 shadow'
-                            : 'text-gray-600 dark:text-slate-300 hover:text-gray-800 dark:hover:text-slate-100'
+                            ? 'bg-white dark:bg-[#101012] text-gray-900 dark:text-slate-100 shadow'
+                            : 'bg-transparent text-gray-600 dark:text-slate-300 hover:text-gray-800 dark:hover:text-slate-100'
                         }`}
                       >
                         How to Use
@@ -493,14 +504,27 @@ export default function App() {
                         </p>
                       </div>
                     ) : (
-                      <div className="space-y-3">
+                     <div className="space-y-3">
+                        <p>
+                          JuanSource helps you quickly verify if a statement is true or misleading by checking reliable online sources.
+                          Just follow these easy steps:
+                        </p>
+
                         <ol className="list-decimal pl-5 space-y-2">
-                          <li>Type a claim in the input box and press Enter.</li>
-                          <li>We gather public evidence and analyze it.</li>
-                          <li>View the final verdict with a Verified or Fake badge.</li>
-                          <li>Use the sidebar to explore trending items.</li>
+                          <li>
+                            <strong>Enter a claim</strong> – Type or paste the statement you want to fact-check.
+                          </li>
+                          <li>
+                            <strong>Run the check</strong> – JuanSource will search reliable sources and gather evidence.
+                          </li>
+                          <li>
+                            <strong>View the result</strong> – See if the claim is true, false, or unverified, along with key references.
+                          </li>
                         </ol>
+
+                        <p>And there you go! You’ve just verified a claim with JuanSource ✨</p>
                       </div>
+
                     )}
                   </div>
                 </div>
