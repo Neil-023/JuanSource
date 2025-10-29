@@ -102,6 +102,8 @@ export default function App() {
   const [query, setQuery] = useState('')
   const [messages, setMessages] = useState([]) // chat messages (both user + backend steps)
   const [isDark, setIsDark] = useState(false)
+  const [showInfo, setShowInfo] = useState(false)
+  const [aboutTab, setAboutTab] = useState('about')
   const idRef = useRef(1)
   const scrollRef = useRef(null)
   const hasDraft = query.trim().length > 0
@@ -326,12 +328,22 @@ export default function App() {
               </div>
               <h3 className="text-sm font-semibold">Top 5 Lorem Ipsum</h3>
             </div>
-            <button className="text-sm text-gray-400">see all</button>
+            {/* replaced "see all" with info icon */}
+            <button
+              onClick={() => setShowInfo(true)}
+              className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-slate-800"
+              aria-label="Open information modal"
+              title="About"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-500 dark:text-slate-300" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12A9 9 0 113 12a9 9 0 0118 0z"/>
+              </svg>
+            </button>
           </div>
 
           <div className="space-y-4">
             {Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="p-3 rounded-lg hover:bg-gray-50">
+              <div key={i} className="p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-800">
                 <h4 className="text-lg font-medium">Top 5 Lorem Ipsum</h4>
                 <p className="mt-1 text-sm text-gray-400 line-clamp-3">a search for 'lorem ipsum' will uncover many web sites still in their infancy. Various versions have evolved over the years...</p>
                 <div className="mt-2 text-xs text-gray-300">2 days ago • Author</div>
@@ -363,6 +375,99 @@ export default function App() {
             )}
           </button>
         </div>
+
+        {/* Info Modal */}
+        {showInfo && (
+          <div className="fixed inset-0 z-50">
+            {/* backdrop */}
+            <div
+              className="absolute inset-0 bg-black/40 dark:bg-black/60"
+              onClick={() => setShowInfo(false)}
+            />
+            {/* dialog */}
+            <div className="absolute inset-0 flex items-center justify-center p-4">
+              <div
+                role="dialog"
+                aria-modal="true"
+                className="w-full max-w-3xl rounded-2xl bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 shadow-2xl"
+              >
+                {/* header */}
+                <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-slate-800">
+                  <h2 className="text-sm font-semibold text-gray-700 dark:text-slate-100">About JuanSource</h2>
+                  <button
+                    onClick={() => setShowInfo(false)}
+                    className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-slate-800"
+                    aria-label="Close modal"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-500 dark:text-slate-300" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+
+                {/* tabs */}
+                <div className="px-6 pt-4">
+                  <div className="flex items-center justify-center">
+                    <div className="inline-flex p-1 rounded-full bg-gray-100 dark:bg-slate-800/80">
+                      <button
+                        onClick={() => setAboutTab('about')}
+                        className={`px-4 py-1.5 text-sm rounded-full transition ${
+                          aboutTab === 'about'
+                            ? 'bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 shadow'
+                            : 'text-gray-600 dark:text-slate-300 hover:text-gray-800 dark:hover:text-slate-100'
+                        }`}
+                      >
+                        About Us
+                      </button>
+                      <button
+                        onClick={() => setAboutTab('how')}
+                        className={`px-4 py-1.5 text-sm rounded-full transition ${
+                          aboutTab === 'how'
+                            ? 'bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 shadow'
+                            : 'text-gray-600 dark:text-slate-300 hover:text-gray-800 dark:hover:text-slate-100'
+                        }`}
+                      >
+                        How to Use
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* body */}
+                  <div className="px-2 sm:px-6 py-6 text-sm text-gray-700 dark:text-slate-200">
+                    {/* logo row */}
+                    <div className="flex items-center justify-center my-6">
+                      <div className="text-3xl font-extrabold tracking-widest text-gray-800 dark:text-slate-100">LOGO</div>
+                    </div>
+
+                    {aboutTab === 'about' ? (
+                      <div className="space-y-3">
+                        <p>
+                          Lorem Ipsum is simply dummy text of the printing and typesetting industry. It has been the
+                          industry’s standard dummy text ever since the 1500s, when an unknown printer took a galley of
+                          type and scrambled it to make a type specimen book.
+                        </p>
+                        <p>
+                          It survived not only five centuries, but also the leap into electronic typesetting, remaining
+                          essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets
+                          containing Lorem Ipsum passages.
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        <ol className="list-decimal pl-5 space-y-2">
+                          <li>Type a claim in the input box and press Enter.</li>
+                          <li>We gather public evidence and analyze it.</li>
+                          <li>View the final verdict with a Verified or Fake badge.</li>
+                          <li>Use the sidebar to explore trending items.</li>
+                        </ol>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )
