@@ -1,7 +1,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+from .fact_checker import run_fact_check
 
-app = FastAPI()
+app = FastAPI(title="JuanSource API")
 
 # Enable CORS so React (running on a different port) can talk to this API
 app.add_middleware(
@@ -12,6 +14,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.get("/api/hello")
-async def hello():
-    return {"message": "Hello from FastAPI!"}
+# Pydantic model to define the structure of the request body
+class ClaimRequest(BaseModel):
+    claim: str
+
+@app.post("/fact-check")
+async def fact_check_endpoint(request: ClaimRequest):
+    return run_fact_check(request.claim)
