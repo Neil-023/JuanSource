@@ -331,8 +331,8 @@ export default function App() {
                   >
                     {/* assistant avatar */}
                     {m.role === 'assistant' && (
-                      <div className="w-8 h-8 rounded-full bg-white dark:bg-slate-800 shadow flex items-center justify-center text-sm font-medium ">
-                        A
+                      <div className="w-8 h-8 rounded-full bg-white dark:bg-slate-800 shadow flex items-center justify-center">
+                        <img src={Logo} alt="JuanSource logo" className="w-5 h-5 object-contain" />
                       </div>
                     )}
 
