@@ -1,21 +1,14 @@
-<br />
-<div align="center">
-  <a href="https://github.com/Neil-023/JuanSource/tree/main">
-    <img src="images/logo.png" alt="Logo" width="100" height="100">
-  </a>
-  <h3 align="center">JuanSource: A Fake News Detector App</h3>
-  </div>
-  
-## About juansource
 ![cover](images/cover.png)
-juansource (short for Juan’s Source of Truth) is a fact-checking web application designed to help Filipinos identify misinformation and fake news online.
+## juansource (short for Juan’s Source of Truth) is a fact-checking web application designed to help Filipinos identify misinformation and fake news online. Built by students under the name Team AltTab, the project aims to make truth accessible to every Juan — simple, fast, and grounded in verified sources. juansource uses AI-powered reasoning with Google Generative AI, LangChain, and the Google Custom Search API to analyze claims in real time. Users can type any statement, and juansource will retrieve credible information, classify the claim (True / False / Uncertain), and explain the reasoning — all in plain language.
 
-Built by students under the name Team AltTab, the project aims to make truth accessible to every Juan — simple, fast, and grounded in verified sources.
 > *In a sea of misinformation, juansource stands as a small voice that answers with truth.*
 
 This project uses **FastAPI** for the backend and **React (Vite + TailwindCSS)** for the frontend.  
 It integrates **LangChain**, **Google Generative AI**, and **Google Search API** for real-time fact-checking.
 
+---
+# Features
+- asdasda
 ---
 
 ## 🖥️ Backend Setup
