@@ -1,4 +1,10 @@
 # JuanSource: A Fake News Detector App
+## About juansource
+
+juansource (short for Juan’s Source of Truth) is a fact-checking web application designed to help Filipinos identify misinformation and fake news online.
+
+Built by students under the name Team AltTab, the project aims to make truth accessible to every Juan — simple, fast, and grounded in verified sources.
+> *In a sea of misinformation, juansource stands as a small voice that answers with truth.*
 
 This project uses **FastAPI** for the backend and **React (Vite + TailwindCSS)** for the frontend.  
 It integrates **LangChain**, **Google Generative AI**, and **Google Search API** for real-time fact-checking.
