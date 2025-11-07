@@ -1,6 +1,8 @@
 <br />
 <div align="center">
-  <img src="images/logo.png" alt="Logo" width="80" height="80">
+  <a href="https://github.com/Neil-023/JuanSource/tree/main">
+    <img src="images/logo.png" alt="Logo" width="100" height="100">
+  </a>
   <h3 align="center">JuanSource: A Fake News Detector App</h3>
   </div>
   
