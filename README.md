@@ -3,7 +3,7 @@ juansource (short for Juan’s Source of Truth) is a fact-checking web applicati
 > *In a sea of misinformation, juansource stands as a small voice that answers with truth.*
 
 This project uses **FastAPI** for the backend and **React (Vite + TailwindCSS)** for the frontend.  
-It integrates **LangChain**, **Google Generative AI**, and supports multiple AI models including **Google Generative AI (Gemini)** and local models via **Ollama**.
+It integrates **LangChain**, **Generative AI**, and supports multiple AI models including **Google Generative AI (Gemini)** and local models via **Ollama**.
 
 ---
 # 📋 Features
@@ -66,7 +66,8 @@ For Ollama: You must have Ollama running locally.
 ```
 uvicorn app.main:app --reload --port 8000
 ```
-Your backend will now run on: http://127.0.0.1:8000
+> [!NOTE]
+> Your backend will now run on: http://127.0.0.1:8000
 
 ## 💡 Frontend Setup 
 
@@ -92,7 +93,8 @@ npx tailwindcss init -p
 ```
 npm run dev
 ```
-Your frontend will now be live on: http://localhost:5173
+> [!NOTE]
+> Your frontend will now be live on: http://localhost:5173
 
 ---
 
