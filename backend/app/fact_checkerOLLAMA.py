@@ -47,7 +47,11 @@ def _ensure_llm() -> ChatOllama:
     if _llm is not None:
         return _llm
     model = os.getenv("OLLAMA_MODEL", "llama3.1:8b")
-    base_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+    configured_host = os.getenv("OLLAMA_BASE_URL") or os.getenv("OLLAMA_HOST")
+    if configured_host:
+        base_url = configured_host if configured_host.startswith("http") else f"http://{configured_host}"
+    else:
+        base_url = "http://localhost:11434"
     
     # Check if Ollama is running
     if not _check_ollama_connection(base_url):
@@ -256,6 +260,19 @@ def _parse_fact_check_output(raw: str):
     
     return _normalise_classification(classification), reasoning or raw.strip(), evidence
 
+def _format_search_results(results) -> str:
+    if isinstance(results, str):
+        return results[:3000]
+    if isinstance(results, list):
+        chunks = []
+        for idx, item in enumerate(results[:5], start=1):
+            title = item.get("title") or "Untitled"
+            url = item.get("link") or item.get("url") or ""
+            snippet = (item.get("snippet") or item.get("description") or "")[:300]
+            chunks.append(f"{idx}. {title}\nURL: {url}\nSummary: {snippet}")
+        return "\n\n".join(chunks)
+    return str(results)
+
 def run_fact_check(claim: str):
     if not claim.strip():
         return {"error": "Claim must not be empty."}
@@ -277,7 +294,10 @@ def run_fact_check(claim: str):
             search_results = search_results[:max_results]
             print(f"   Limited search results to {max_results} items for faster processing")
         
-        final_prompt = RAG_PROMPT.format(query=claim, search_results=search_results)
+        final_prompt = RAG_PROMPT.format(
+            query=claim,
+            search_results=_format_search_results(search_results),
+        )
         prompt_length = len(final_prompt)
         print("4. Sending evidence to local LLM for Reasoning...")
         print(f"   Model: {os.getenv('OLLAMA_MODEL', 'llama3.1:8b')}, Prompt length: {prompt_length} chars")

@@ -14,10 +14,10 @@ import Logo from './assets/logo.png'
 import './index.css'
 
 const API_BASE = import.meta.env.VITE_API_BASE ?? 'http://localhost:8000'
-const PROGRESS_STEPS = [
+const getProgressSteps = (engine) => [
   'Sending claim to fact-checker…',
   'Collecting live evidence 🔎',
-  'Analyzing claim with Gemini ✨',
+  engine === 'ollama' ? 'Analyzing claim with Ollama 🧠' : 'Analyzing claim with Gemini ✨',
   'Summarizing verdict 📝',
 ]
 
@@ -41,6 +41,9 @@ const describeBackendError = (raw) => {
   }
   if (lowered.includes('gemini')) {
     return 'Gemini API credentials are missing or invalid on the backend (check GEMINI_API_KEY).'
+  }
+  if (lowered.includes('ollama') || lowered.includes('11434')) {
+    return 'Ollama backend is offline. Launch it locally with `ollama serve` (and ensure the requested model is pulled) so the Ollama Version can respond.'
   }
   return raw
 }
@@ -143,6 +146,11 @@ function FinalResultCard({ headline, reasoning, verdict, evidence }) {
   )
 }
 
+const ENGINE_OPTIONS = [
+  { value: 'google', label: 'Google Version', endpoint: '/fact-check' },
+  { value: 'ollama', label: 'Ollama Version', endpoint: '/fact-check-ollama' },
+]
+
 export default function App() {
   const [query, setQuery] = useState('')
   const [messages, setMessages] = useState([])
@@ -150,6 +158,8 @@ export default function App() {
   const [showInfo, setShowInfo] = useState(false)
   const [aboutTab, setAboutTab] = useState('about')
   const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [engine, setEngine] = useState('google')
+  const [engineMenuOpen, setEngineMenuOpen] = useState(false)
   const idRef = useRef(1)
   const scrollRef = useRef(null)
   const hasDraft = query.trim().length > 0
@@ -183,6 +193,8 @@ export default function App() {
     }
   }, [messages, hasDraft])
 
+  const selectedEngine = ENGINE_OPTIONS.find((opt) => opt.value === engine) ?? ENGINE_OPTIONS[0]
+
   const send = async (e) => {
     if (e) e.preventDefault()
     const trimmed = query.trim()
@@ -202,19 +214,21 @@ export default function App() {
     ])
 
     try {
-      for (let i = 0; i < PROGRESS_STEPS.length; i++) {
+      const steps = getProgressSteps(selectedEngine.value)
+      for (let i = 0; i < steps.length; i++) {
         await sleep(600 + Math.random() * 600)
-        const currentStep = PROGRESS_STEPS[i]
+        const currentStep = steps[i]
         setMessages((m) =>
           m.map((msg) =>
             msg.id === stepId
-              ? { ...msg, text: currentStep, loading: i !== PROGRESS_STEPS.length - 1 }
+              ? { ...msg, text: currentStep, loading: i !== steps.length - 1 }
               : msg
           )
         )
       }
 
-      const response = await fetch(`${API_BASE}/fact-check`, {
+      const endpoint = selectedEngine.endpoint
+      const response = await fetch(`${API_BASE}${endpoint}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ claim: trimmed }),
@@ -315,7 +329,7 @@ export default function App() {
                 </h1>
 
                 <div className="w-full max-w-3xl">
-                  <p className="mt-4 text-sm text-gray-500 sm:text-base">This tool uses Generative AI (Gemini) and real-time web search (Google Search) for factual verification. Always verify critical information independently. Stay vigilant, stay informed. </p>
+                  <p className="mt-4 text-sm text-gray-500 sm:text-base">This tool uses Generative AI and real-time web search (Google Search) for factual verification. Always verify critical information independently. Stay vigilant, stay informed. </p>
 
                 </div>
               </div>
@@ -380,23 +394,65 @@ export default function App() {
 
           <div className="mt-8">
             <form onSubmit={send} className="max-w-3xl lg:max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="relative">
-                <input
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Not sure if it's true? Type it here..."
-                  className="w-full pl-5 pr-12 py-4 rounded-xl bg-white dark:bg-[#1B1C22] shadow-lg placeholder-gray-400 dark:placeholder-[#505050] text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-300 dark:focus:ring-purple-600/60 border border-transparent"
-                />
+              <div className="flex items-center gap-3">
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setEngineMenuOpen((open) => !open)}
+                    className="min-w-[150px] px-4 py-3 rounded-xl bg-white dark:bg-[#1B1C22] shadow text-sm text-left border border-transparent dark:border-[#26262F] flex items-center justify-between gap-3"
+                  >
+                    <span>{selectedEngine.label}</span>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className={`h-4 w-4 transition-transform ${engineMenuOpen ? 'rotate-180' : ''}`}
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    >
+                      <path d="M6 9l6 6 6-6" />
+                    </svg>
+                  </button>
+                  {engineMenuOpen && (
+                    <div className="absolute z-10 mt-2 w-48 rounded-xl bg-white dark:bg-[#1B1C22] shadow-lg border border-gray-100 dark:border-[#26262F]">
+                      {ENGINE_OPTIONS.map((option) => (
+                        <button
+                          key={option.value}
+                          type="button"
+                          onClick={() => {
+                            setEngine(option.value)
+                            setEngineMenuOpen(false)
+                          }}
+                          className={`w-full text-left px-4 py-2 text-sm ${
+                            engine === option.value
+                              ? 'bg-gray-50 dark:bg-[#23242C] text-[#6C63FF]'
+                              : 'text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-[#23242C]'
+                          }`}
+                        >
+                          {option.label}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
 
-                <button
-                  type="submit"
-                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-[#6C63FF] p-2.5 sm:p-3 rounded-lg shadow-md transition-transform duration-150 hover:scale-105"
-                  aria-label="submit-search"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 12h14M12 5l7 7-7 7" />
-                  </svg>
-                </button>
+                <div className="flex-1 relative">
+                  <input
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    placeholder="Not sure if it's true? Type it here..."
+                    className="w-full pl-5 pr-12 py-4 rounded-xl bg-white dark:bg-[#1B1C22] shadow-lg placeholder-gray-400 dark:placeholder-[#505050] text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-300 dark:focus:ring-purple-600/60 border border-transparent"
+                  />
+                  <button
+                    type="submit"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 bg-[#6C63FF] p-2.5 sm:p-3 rounded-lg shadow-md transition-transform duration-150 hover:scale-105"
+                    aria-label="submit-search"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 12h14M12 5l7 7-7 7" />
+                    </svg>
+                  </button>
+                </div>
               </div>
             </form>
           </div>
@@ -572,7 +628,7 @@ export default function App() {
                     {aboutTab === 'about' ? (
                       <div className="space-y-3">
                         <p className='text-justify'>
-                          <strong>JuanSource</strong> is a fact-checking tool that combines Generative AI (Gemini) with real-time Google Search to verify information and detect misleading claims. Designed to combat the spread of fake news and disinformation in the Philippines, especially during elections and major public issues. JuanSource empowers users to stay informed and think critically.
+                          <strong>JuanSource</strong> is a fact-checking tool that combines Generative AI with real-time Google Search to verify information and detect misleading claims. Designed to combat the spread of fake news and disinformation in the Philippines, especially during elections and major public issues. JuanSource empowers users to stay informed and think critically.
                         </p>
          
                       </div>

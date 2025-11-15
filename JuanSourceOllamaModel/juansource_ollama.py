@@ -10,14 +10,14 @@ Original file is located at
 # Cell 1: Install Dependencies and Ollama Setup
 
 # Install Python Libraries (LangChain and Google Search)
-!pip install -q langchain langchain-ollama langchain-community google-search-results
+# !pip install -q langchain langchain-ollama langchain-community google-search-results
 
 # Install the necessary networking tools for the local server
-!pip install -q nest-asyncio requests
+# !pip install -q nest-asyncio requests
 
 # --- Ollama Setup (Running the server inside Colab) ---
 # 1. Download and install the Ollama binary
-!curl -fsSL https://ollama.com/install.sh | sh
+#!curl -fsSL https://ollama.com/install.sh | sh
 
 # 2. Start the Ollama server in the background
 import subprocess

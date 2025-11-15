@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List
 from .fact_checker import run_fact_check
+from .fact_checkerOLLAMA import run_fact_check as run_fact_check_ollama
 
 app = FastAPI(title="JuanSource API")
 
@@ -31,6 +32,13 @@ class FactCheckResponse(BaseModel):
 @app.post("/fact-check", response_model=FactCheckResponse)
 async def fact_check_endpoint(request: ClaimRequest):
     result = run_fact_check(request.claim)
+    if "error" in result:
+        raise HTTPException(status_code=500, detail=result["error"])
+    return result
+
+@app.post("/fact-check-ollama", response_model=FactCheckResponse)
+async def fact_check_ollama_endpoint(request: ClaimRequest):
+    result = run_fact_check_ollama(request.claim)
     if "error" in result:
         raise HTTPException(status_code=500, detail=result["error"])
     return result

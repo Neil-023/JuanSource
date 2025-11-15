@@ -1,9 +1,9 @@
 import os
 import re
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Optional
 from dotenv import load_dotenv, find_dotenv
-from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_community.utilities import GoogleSearchAPIWrapper
 from langchain_core.prompts import PromptTemplate
 
@@ -11,6 +11,18 @@ load_dotenv(find_dotenv(usecwd=True) or Path(__file__).resolve().parents[2] / ".
 
 _llm: Optional[ChatGoogleGenerativeAI] = None
 _search: Optional[GoogleSearchAPIWrapper] = None
+genai = None
+_genai_exc = None
+try:
+    from langchain_google_genai import ChatGoogleGenerativeAI
+    _langchain_google_exc = None
+except Exception as exc:
+    ChatGoogleGenerativeAI = None
+    _langchain_google_exc = exc
+    try:
+        import google.generativeai as genai
+    except Exception as genai_exc:
+        _genai_exc = genai_exc
 
 def _ensure_google_search() -> GoogleSearchAPIWrapper:
     global _search
@@ -25,7 +37,35 @@ def _ensure_google_search() -> GoogleSearchAPIWrapper:
     _search = GoogleSearchAPIWrapper()
     return _search
 
-def _ensure_llm() -> ChatGoogleGenerativeAI:
+class _NativeGeminiClient:
+    def __init__(self, api_key: str, model_name: str, temperature: float):
+        if genai is None:
+            raise RuntimeError(
+                "LangChain Gemini adapter failed to load "
+                "and google-generativeai is unavailable. "
+                "Run: pip install -U langchain-core langchain-google-genai google-generativeai"
+            ) from (_genai_exc or _langchain_google_exc)
+        genai.configure(api_key=api_key)
+        self._model = genai.GenerativeModel(
+            model_name=model_name,
+            generation_config={"temperature": temperature},
+        )
+
+    def invoke(self, prompt: str):
+        result = self._model.generate_content(prompt)
+        text = getattr(result, "text", None)
+        if not text and hasattr(result, "candidates"):
+            parts = []
+            for candidate in result.candidates or []:
+                if getattr(candidate, "content", None):
+                    for part in getattr(candidate.content, "parts", []) or []:
+                        content = getattr(part, "text", None) or part if isinstance(part, str) else ""
+                        if content:
+                            parts.append(content)
+            text = "\n".join(parts)
+        return SimpleNamespace(content=(text or str(result)))
+
+def _ensure_llm() -> object:
     global _llm
     if _llm is not None:
         return _llm
@@ -36,11 +76,20 @@ def _ensure_llm() -> ChatGoogleGenerativeAI:
             "No Gemini credentials found. Provide GOOGLE_API_KEY or GOOGLE_APPLICATION_CREDENTIALS "
             "before starting the backend."
         )
-    _llm = ChatGoogleGenerativeAI(
-        model="gemini-2.5-flash",
-        temperature=0.1,
-        google_api_key=api_key or None,
-    )
+    model_name = os.getenv('GEMINI_MODEL', 'gemini-2.5-flash')
+    temperature = float(os.getenv('LLM_TEMPERATURE', '0.1'))
+    if ChatGoogleGenerativeAI is not None:
+        _llm = ChatGoogleGenerativeAI(
+            model=model_name,
+            temperature=temperature,
+            google_api_key=api_key or None,
+        )
+    else:
+        _llm = _NativeGeminiClient(
+            api_key=api_key or "",
+            model_name=model_name,
+            temperature=temperature,
+        )
     return _llm
 
 # III. The Reasoning Prompt Template
