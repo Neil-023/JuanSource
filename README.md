@@ -99,9 +99,9 @@ npm run dev
 ---
 
 # 🚀 How It Works
-1️⃣ User enters a claim or headline (e.g., “Apples are orange.”)
+1️⃣ User selects their preferred fact-checking engine (Google or Ollama).
 
-2️⃣ User selects their preferred fact-checking engine (Google or Ollama).
+2️⃣ User enters a claim or headline (e.g., “Apples are orange.”)
 
 3️⃣ juansource fetches relevant snippets from Google Search.
 
